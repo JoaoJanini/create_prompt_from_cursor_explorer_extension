@@ -3,7 +3,27 @@
     "displayName": "Copy File Tree",
     "description": "Copy selected files/directories as a Markdown tree (with contents) to the clipboard.",
     "version": "0.0.1",
-    "publisher": "your-name-here",
+    "publisher": "joaojanini",
+    "author": "João Janini",
+    "license": "MIT",
+    "homepage": "https://github.com/JoaoJanini/create_prompt_from_cursor_explorer_extension#readme",
+    "bugs": {
+        "url": "https://github.com/JoaoJanini/create_prompt_from_cursor_explorer_extension/issues"
+    },
+    "keywords": [
+        "copy",
+        "file-tree",
+        "markdown",
+        "ai",
+        "chatgpt",
+        "claude",
+        "clipboard",
+        "explorer"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/JoaoJanini/create_prompt_from_cursor_explorer_extension.git"
+    },
     "engines": {
         "vscode": "^1.90.0"
     },
@@ -30,7 +50,15 @@
             ]
         }
     },
+    "scripts": {
+        "package": "vsce package",
+        "publish": "vsce publish",
+        "install-local": "code --install-extension copy-file-tree-*.vsix || cursor --install-extension copy-file-tree-*.vsix"
+    },
     "dependencies": {
         "tiktoken": "^1.0.21"
+    },
+    "devDependencies": {
+        "@vscode/vsce": "^2.24.0"
     }
 }

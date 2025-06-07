@@ -50,12 +50,14 @@ The output is optimized for pasting into:
 
 ## Installation
 
-### Prerequisites
-Make sure you have Node.js installed on your system.
+### From VS Code Marketplace (Recommended)
+1. Open VS Code/Cursor
+2. Go to Extensions (`Ctrl+Shift+X`)
+3. Search for "Copy File Tree"
+4. Click Install
 
-### Install the Extension
-
-1. Clone or download this repository
+### Manual Installation (Development)
+1. Clone this repository
 2. Run the installation script:
 
 ```bash
@@ -63,30 +65,25 @@ chmod +x install_extension.sh
 ./install_extension.sh
 ```
 
-This script will:
-- Install the VS Code Extension CLI (`vsce`) globally
-- Install project dependencies 
-- Package the extension into a `.vsix` file
-- Install the extension in Cursor/VS Code
+## Development
 
-### Manual Installation (Alternative)
+### Prerequisites
+- Node.js (version 14 or higher)
+- VS Code or Cursor
 
-If you prefer to install manually:
-
+### Setup
 ```bash
-# Install vsce globally
-npm i -g @vscode/vsce
+# Clone the repository
+git clone https://github.com/JoaoJanini/create_prompt_from_cursor_explorer_extension.git
+cd create_prompt_from_cursor_explorer_extension
 
 # Install dependencies
 npm install
 
 # Package the extension
-vsce package --allow-missing-repository 
+npm run package
 
-# Install in Cursor
-cursor --install-extension copy-file-tree-0.0.1.vsix
-
-# Or install in VS Code
-code --install-extension copy-file-tree-0.0.1.vsix
+# Install locally
+npm run install-local
 ```
 

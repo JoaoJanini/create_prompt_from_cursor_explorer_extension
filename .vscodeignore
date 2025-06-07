@@ -1,0 +1,24 @@
+# Development files
+node_modules/
+.vscode/
+.git/
+.gitignore
+
+# Build artifacts
+*.vsix
+*.tgz
+
+# Documentation and screenshots (optional - remove if you want them in package)
+screenshots/
+extension_instructions.md
+README.md
+
+# Scripts
+install_extension.sh
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log 
