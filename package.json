@@ -1,0 +1,36 @@
+{
+    "name": "copy-file-tree",
+    "displayName": "Copy File Tree",
+    "description": "Copy selected files/directories as a Markdown tree (with contents) to the clipboard.",
+    "version": "0.0.1",
+    "publisher": "your-name-here",
+    "engines": {
+        "vscode": "^1.90.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "main": "./extension.js",
+    "activationEvents": [
+        "onCommand:copyFileTree.copy"
+    ],
+    "contributes": {
+        "commands": [
+            {
+                "command": "copyFileTree.copy",
+                "title": "Copy file tree to clipboard"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "command": "copyFileTree.copy",
+                    "group": "navigation"
+                }
+            ]
+        }
+    },
+    "dependencies": {
+        "tiktoken": "^1.0.21"
+    }
+}
