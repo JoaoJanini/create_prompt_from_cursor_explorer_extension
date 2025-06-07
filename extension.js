@@ -118,7 +118,7 @@ function activate(context) {
     try {
       const sel = multi && multi.length ? multi : [clicked];
       const { tree, filePaths, totalTokens } = prepare(sel);
-      const md = `**Total tokens:** ${totalTokens}\n\n# File Tree\n\n\`\`\`text\n${tree}\n\`\`\`\n\n${dumpFilesMarkdown(filePaths)}`;
+      const md = `**Total tokens:** ${totalTokens}\n\n# File Tree\n\n${tree}\n\n${dumpFilesMarkdown(filePaths)}`;
       await vscode.env.clipboard.writeText(md);
       vscode.window.setStatusBarMessage('📋 File tree copied with tokens.', 3000);
     } catch (e) {

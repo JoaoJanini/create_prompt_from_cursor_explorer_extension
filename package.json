@@ -2,7 +2,7 @@
     "name": "copy-file-tree",
     "displayName": "Copy File Tree",
     "description": "Copy selected files/directories as a Markdown tree (with contents) to the clipboard.",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "joaojanini",
     "author": "João Janini",
     "license": "MIT",
