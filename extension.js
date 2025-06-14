@@ -406,12 +406,6 @@ function activate(context) {
       
       if (e.item.matchingStack) {
         // Delete stack
-        const confirm = await vscode.window.showWarningMessage(
-          `Delete stack "${e.item.matchingStack.name}"?`,
-          'Delete', 'Cancel'
-        );
-        if (confirm !== 'Delete') return;
-
         const cfg = vscode.workspace.getConfiguration('filePrompt');
         const currentStacks = cfg.get('savedStacks', []);
         const updatedStacks = currentStacks.filter(stack => stack.name !== e.item.matchingStack.name);
@@ -502,11 +496,6 @@ function activate(context) {
     /* delete button */
     qp.onDidTriggerItemButton(async (e) => {
       const stackToDelete = stacks[e.item.idx];
-      const confirm = await vscode.window.showWarningMessage(
-        `Delete stack "${stackToDelete.name}"?`,
-        'Delete', 'Cancel'
-      );
-      if (confirm !== 'Delete') return;
 
       const updatedStacks = stacks.filter((_, i) => i !== e.item.idx);
       await cfg.update('savedStacks', updatedStacks, vscode.ConfigurationTarget.Workspace);
