@@ -1,5 +1,7 @@
 # Development files
-node_modules/
+node_modules/*
+!node_modules/language-map/**
+!node_modules/tiktoken/**
 .vscode/
 .git/
 .gitignore

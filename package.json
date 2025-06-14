@@ -2,7 +2,7 @@
     "name": "copy-file-tree",
     "displayName": "Copy File Tree",
     "description": "Copy selected files/directories as a Markdown tree (with contents) to the clipboard.",
-    "version": "0.0.2",
+    "version": "0.0.7",
     "publisher": "joaojanini",
     "author": "João Janini",
     "license": "MIT",
@@ -39,6 +39,18 @@
             {
                 "command": "copyFileTree.copy",
                 "title": "Copy file tree to clipboard"
+            },
+            {
+                "command": "copyFileTree.addToIgnoreList",
+                "title": "Copy File Tree: Add current file to ignore list"
+            },
+            {
+                "command": "copyFileTree.removeFromIgnoreList",
+                "title": "Copy File Tree: Remove current file from ignore list"
+            },
+            {
+                "command": "copyFileTree.showHistory",
+                "title": "Copy File Tree: Show history"
             }
         ],
         "menus": {
@@ -48,15 +60,101 @@
                     "group": "navigation"
                 }
             ]
+        },
+        "configuration": {
+            "title": "Copy File Tree",
+            "properties": {
+                "copyFileTree.ignoredExtensions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [
+                        ".jpg",
+                        ".jpeg",
+                        ".png",
+                        ".gif",
+                        ".bmp",
+                        ".svg",
+                        ".ico",
+                        ".webp",
+                        ".tiff",
+                        ".tif",
+                        ".mp3",
+                        ".mp4",
+                        ".avi",
+                        ".mov",
+                        ".wav",
+                        ".flac",
+                        ".mkv",
+                        ".webm",
+                        ".m4a",
+                        ".ogg",
+                        ".zip",
+                        ".rar",
+                        ".tar",
+                        ".gz",
+                        ".7z",
+                        ".bz2",
+                        ".xz",
+                        ".exe",
+                        ".dll",
+                        ".so",
+                        ".dylib",
+                        ".bin",
+                        ".dat",
+                        ".db",
+                        ".sqlite",
+                        ".pdf",
+                        ".doc",
+                        ".docx",
+                        ".xls",
+                        ".xlsx",
+                        ".ppt",
+                        ".pptx",
+                        ".ttf",
+                        ".otf",
+                        ".woff",
+                        ".woff2",
+                        ".eot",
+                        ".lock",
+                        ".log",
+                        ".tmp",
+                        ".temp",
+                        ".cache"
+                    ],
+                    "description": "List of file extensions to ignore (include the dot, e.g., '.jpg')"
+                },
+                "copyFileTree.respectGitignore": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Ignore files and folders that match .gitignore patterns"
+                },
+                "copyFileTree.extraIgnoredFiles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "description": "Additional files and directories to ignore (relative paths from workspace root)"
+                },
+                "copyFileTree.savedStacks": {
+                    "type": "array",
+                    "default": [],
+                    "description": "Named file‑selection stacks saved from Copy File Tree history. Each item has the shape { \"name\": string, \"paths\": string[] }."
+                }
+            }
         }
     },
     "scripts": {
         "package": "vsce package",
         "publish": "vsce publish",
-        "install-local": "code --install-extension copy-file-tree-*.vsix || cursor --install-extension copy-file-tree-*.vsix"
+        "install-local": " cursor --install-extension copy-file-tree-*.vsix && code --install-extension copy-file-tree-*.vsix",
+        "full-install": "npm install && npm run package && npm run install-local"
     },
     "dependencies": {
-        "tiktoken": "^1.0.21"
+        "language-map": "^1.5.0",
+        "ignore": "^5.3.0"
     },
     "devDependencies": {
         "@vscode/vsce": "^2.24.0"
