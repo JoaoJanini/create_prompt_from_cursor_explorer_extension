@@ -347,44 +347,192 @@ function activate(context) {
   context.subscriptions.push(copyCommand, addIgnoreCmd, removeIgnoreCmd);
 
   /* ── ❸ history command ───────────────────────────── */
-  const histCmd = vscode.commands.registerCommand('copyFileTree.showHistory', async () => {
+  const histCmd = vscode.commands.registerCommand('copyFileTree.showHistory', () => {
     if (history.length === 0) {
       return vscode.window.showInformationMessage('Copy File Tree: no history yet.');
     }
 
-    const pick = await vscode.window.showQuickPick(
-      history.map((h, i) => ({
-        label: `${i + 1}. ${h.preview}`,
+    // Get saved stacks to check for matches
+    const cfg = vscode.workspace.getConfiguration('copyFileTree');
+    const stacks = cfg.get('savedStacks', []);
+
+    const saveButton = {
+      iconPath: new vscode.ThemeIcon('save'),
+      tooltip:   'Save as stack'
+    };
+
+    const deleteButton = {
+      iconPath: new vscode.ThemeIcon('trash'),
+      tooltip:   'Delete stack'
+    };
+
+    const qp = vscode.window.createQuickPick();
+    qp.matchOnDetail = true;
+    qp.placeholder   = 'Select to re‑copy · click 💾 to save as stack · click 🗑️ to delete stack';
+    qp.items = history.map((h, i) => {
+      // Check if this history entry matches any saved stack
+      const matchingStack = stacks.find(stack => {
+        if (stack.paths.length !== h.paths.length) return false;
+        const sortedStackPaths = [...stack.paths].sort();
+        const sortedHistoryPaths = [...h.paths].sort();
+        return sortedStackPaths.every((path, i) => path === sortedHistoryPaths[i]);
+      });
+
+      return {
+        label:       matchingStack 
+          ? `📚 ${matchingStack.name}`
+          : `${i + 1}. ${h.preview}`,
         description: new Date(h.ts).toLocaleTimeString(),
-        detail: `${h.paths.length} file${h.paths.length !== 1 ? 's' : ''}`,
-        idx: i
-      })),
-      { placeHolder: 'Select a previous copy' }
-    );
-    if (!pick) { return; }
+        detail:      `${h.paths.length} file${h.paths.length !== 1 ? 's' : ''}`,
+        idx:         i,
+        matchingStack: matchingStack,
+        buttons:     matchingStack ? [deleteButton] : [saveButton] // Show delete for stacks, save for non-stacks
+      };
+    });
 
-    const action = await vscode.window.showQuickPick(
-      ['Re-copy now', 'Save as named stack', 'Cancel'],
-      { placeHolder: 'What do you want to do?' }
-    );
-    if (!action || action === 'Cancel') { return; }
+    /* re‑copy on single selection */
+    qp.onDidAccept(() => {
+      const sel = qp.selectedItems[0];
+      if (sel) {
+        const entry = history[sel.idx];
+        qp.hide();
+        runCopy(entry.paths.map(p => vscode.Uri.file(p)));
+      }
+    });
 
-    const chosen = history[pick.idx];
+    /* save/delete button */
+    qp.onDidTriggerItemButton(async (e) => {
+      const entry = history[e.item.idx];
+      
+      if (e.item.matchingStack) {
+        // Delete stack
+        const confirm = await vscode.window.showWarningMessage(
+          `Delete stack "${e.item.matchingStack.name}"?`,
+          'Delete', 'Cancel'
+        );
+        if (confirm !== 'Delete') return;
 
-    if (action === 'Re-copy now') {
-      runCopy(chosen.paths.map(p => vscode.Uri.file(p)));
-    } else if (action === 'Save as named stack') {
-      const name = await vscode.window.showInputBox({ prompt: 'Stack name' });
-      if (!name) { return; }
-      const cfg   = vscode.workspace.getConfiguration('copyFileTree');
-      const stacks = cfg.get('savedStacks', []);
-      stacks.push({ name, paths: chosen.paths });
-      await cfg.update('savedStacks', stacks, vscode.ConfigurationTarget.Workspace);
-      vscode.window.showInformationMessage(`Saved as stack "${name}".`);
-    }
+        const cfg = vscode.workspace.getConfiguration('copyFileTree');
+        const currentStacks = cfg.get('savedStacks', []);
+        const updatedStacks = currentStacks.filter(stack => stack.name !== e.item.matchingStack.name);
+        await cfg.update('savedStacks', updatedStacks, vscode.ConfigurationTarget.Workspace);
+        
+        // Refresh the history view to update stack indicators
+        qp.hide();
+        vscode.window.showInformationMessage(`Deleted stack "${e.item.matchingStack.name}".`);
+        // Re-run the command to refresh the view
+        vscode.commands.executeCommand('copyFileTree.showHistory');
+      } else {
+        // Save as new stack
+        qp.busy = true;
+        const name = await vscode.window.showInputBox({ prompt: 'Stack name', value: '' });
+        qp.busy = false;
+        if (!name) { return; }
+
+        const cfg = vscode.workspace.getConfiguration('copyFileTree');
+        const stacks = cfg.get('savedStacks', []);
+        stacks.push({ name, paths: entry.paths });
+        await cfg.update('savedStacks', stacks, vscode.ConfigurationTarget.Workspace);
+        
+        // Refresh the history view to show the new stack
+        qp.hide();
+        vscode.window.showInformationMessage(`Saved as stack "${name}".`);
+        // Re-run the command to refresh the view
+        vscode.commands.executeCommand('copyFileTree.showHistory');
+      }
+    });
+
+    qp.show();
   });
 
-  context.subscriptions.push(histCmd);
+  /* ── ❹ saved stacks command ───────────────────────────── */
+  const stacksCmd = vscode.commands.registerCommand('copyFileTree.copySavedStack', () => {
+    const cfg = vscode.workspace.getConfiguration('copyFileTree');
+    const stacks = cfg.get('savedStacks', []);
+    
+    if (stacks.length === 0) {
+      return vscode.window.showInformationMessage('Copy File Tree: no saved stacks yet.');
+    }
+
+    const deleteButton = {
+      iconPath: new vscode.ThemeIcon('trash'),
+      tooltip: 'Delete stack'
+    };
+
+    const qp = vscode.window.createQuickPick();
+    qp.matchOnDetail = true;
+    qp.placeholder = 'Select to copy · click 🗑️ to delete stack';
+    qp.items = stacks.map((stack, i) => ({
+      label: `📚 ${stack.name}`,
+      description: `${stack.paths.length} file${stack.paths.length !== 1 ? 's' : ''}`,
+      detail: stack.paths.slice(0, 3).map(p => vscode.workspace.asRelativePath(p, false)).join(', ') + 
+              (stack.paths.length > 3 ? `, +${stack.paths.length - 3} more...` : ''),
+      idx: i,
+      buttons: [deleteButton]
+    }));
+
+    /* copy on selection */
+    qp.onDidAccept(async () => {
+      const sel = qp.selectedItems[0];
+      if (!sel) return;
+      
+      qp.hide();
+      const chosen = stacks[sel.idx];
+      
+      // Check if files still exist (silently ignore missing ones)
+      const existingPaths = [];
+      
+      await Promise.all(chosen.paths.map(async (p) => {
+        try {
+          await fs.stat(p);
+          existingPaths.push(p);
+        } catch {
+          // Silently ignore missing files/directories
+        }
+      }));
+
+      if (existingPaths.length === 0) {
+        return vscode.window.showErrorMessage(`No files from stack "${chosen.name}" exist anymore.`);
+      }
+
+      // Copy immediately
+      runCopy(existingPaths.map(p => vscode.Uri.file(p)));
+    });
+
+    /* delete button */
+    qp.onDidTriggerItemButton(async (e) => {
+      const stackToDelete = stacks[e.item.idx];
+      const confirm = await vscode.window.showWarningMessage(
+        `Delete stack "${stackToDelete.name}"?`,
+        'Delete', 'Cancel'
+      );
+      if (confirm !== 'Delete') return;
+
+      const updatedStacks = stacks.filter((_, i) => i !== e.item.idx);
+      await cfg.update('savedStacks', updatedStacks, vscode.ConfigurationTarget.Workspace);
+      
+      // Refresh the quick pick
+      qp.items = updatedStacks.map((stack, i) => ({
+        label: `📚 ${stack.name}`,
+        description: `${stack.paths.length} file${stack.paths.length !== 1 ? 's' : ''}`,
+        detail: stack.paths.slice(0, 3).map(p => vscode.workspace.asRelativePath(p, false)).join(', ') + 
+                (stack.paths.length > 3 ? `, +${stack.paths.length - 3} more...` : ''),
+        idx: i,
+        buttons: [deleteButton]
+      }));
+
+      if (updatedStacks.length === 0) {
+        qp.hide();
+        vscode.window.showInformationMessage('All stacks deleted.');
+      } else {
+        vscode.window.showInformationMessage(`Deleted stack "${stackToDelete.name}".`);
+      }
+    });
+
+    qp.show();
+  });
+
+  context.subscriptions.push(histCmd, stacksCmd);
 }
 
 function deactivate() {}

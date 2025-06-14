@@ -51,6 +51,10 @@
             {
                 "command": "copyFileTree.showHistory",
                 "title": "Copy File Tree: Show history"
+            },
+            {
+                "command": "copyFileTree.copySavedStack",
+                "title": "Copy File Tree: Copy from saved stack"
             }
         ],
         "menus": {
