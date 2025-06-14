@@ -39,7 +39,7 @@ function detectLang(file) {
 }
 
 /* ─────────── configuration helpers ─────────── */
-const getConfig           = () => vscode.workspace.getConfiguration('copyFileTree');
+const getConfig           = () => vscode.workspace.getConfiguration('filePrompt');
 const isUnwantedExtension = (p) => getConfig()
   .get('ignoredExtensions', [])
   .includes(path.extname(p).toLowerCase());
@@ -270,7 +270,7 @@ function activate(context) {
       if (getConfig().get('respectGitignore', true)) parts.push('(respecting .gitignore)');
       vscode.window.setStatusBarMessage(parts.join(' '), 5000);
     } catch (err) {
-      vscode.window.showErrorMessage(`Copy File Tree: ${err.message || err}`);
+      vscode.window.showErrorMessage(`FilePrompt: ${err.message || err}`);
     } finally {
       jobRunning = false;
       if (queuedSel) {               // run the most‑recently‑queued request
@@ -290,14 +290,14 @@ function activate(context) {
 
   /* ── ❷ command now delegates to runCopy() ── */
   const copyCommand = vscode.commands.registerCommand(
-    'copyFileTree.copy',
+    'filePrompt.copy',
     (clicked, multi) => {
       const sel = multi?.length ? multi : [clicked];
       runCopy(sel);
     }
   );
 
-  const addIgnoreCmd = vscode.commands.registerCommand('copyFileTree.addToIgnoreList', async () => {
+  const addIgnoreCmd = vscode.commands.registerCommand('filePrompt.addToIgnoreList', async () => {
     try {
       const editor = vscode.window.activeTextEditor;
       if (!editor) { return vscode.window.showErrorMessage('No active file'); }
@@ -306,7 +306,7 @@ function activate(context) {
       if (!root)  { return vscode.window.showErrorMessage('No workspace found'); }
 
       const rel  = path.relative(root, editor.document.uri.fsPath).replace(/\\/g, '/');
-      const cfg  = vscode.workspace.getConfiguration('copyFileTree');
+      const cfg  = vscode.workspace.getConfiguration('filePrompt');
       const list = cfg.get('extraIgnoredFiles', []);
 
       if (list.includes(rel)) {
@@ -320,7 +320,7 @@ function activate(context) {
     }
   });
 
-  const removeIgnoreCmd = vscode.commands.registerCommand('copyFileTree.removeFromIgnoreList', async () => {
+  const removeIgnoreCmd = vscode.commands.registerCommand('filePrompt.removeFromIgnoreList', async () => {
     try {
       const editor = vscode.window.activeTextEditor;
       if (!editor) { return vscode.window.showErrorMessage('No active file'); }
@@ -329,7 +329,7 @@ function activate(context) {
       if (!root)  { return vscode.window.showErrorMessage('No workspace found'); }
 
       const rel  = path.relative(root, editor.document.uri.fsPath).replace(/\\/g, '/');
-      const cfg  = vscode.workspace.getConfiguration('copyFileTree');
+      const cfg  = vscode.workspace.getConfiguration('filePrompt');
       const list = cfg.get('extraIgnoredFiles', []);
 
       if (!list.includes(rel)) {
@@ -347,13 +347,13 @@ function activate(context) {
   context.subscriptions.push(copyCommand, addIgnoreCmd, removeIgnoreCmd);
 
   /* ── ❸ history command ───────────────────────────── */
-  const histCmd = vscode.commands.registerCommand('copyFileTree.showHistory', () => {
+  const histCmd = vscode.commands.registerCommand('filePrompt.showHistory', () => {
     if (history.length === 0) {
-      return vscode.window.showInformationMessage('Copy File Tree: no history yet.');
+      return vscode.window.showInformationMessage('FilePrompt: no history yet.');
     }
 
     // Get saved stacks to check for matches
-    const cfg = vscode.workspace.getConfiguration('copyFileTree');
+    const cfg = vscode.workspace.getConfiguration('filePrompt');
     const stacks = cfg.get('savedStacks', []);
 
     const saveButton = {
@@ -412,7 +412,7 @@ function activate(context) {
         );
         if (confirm !== 'Delete') return;
 
-        const cfg = vscode.workspace.getConfiguration('copyFileTree');
+        const cfg = vscode.workspace.getConfiguration('filePrompt');
         const currentStacks = cfg.get('savedStacks', []);
         const updatedStacks = currentStacks.filter(stack => stack.name !== e.item.matchingStack.name);
         await cfg.update('savedStacks', updatedStacks, vscode.ConfigurationTarget.Workspace);
@@ -421,7 +421,7 @@ function activate(context) {
         qp.hide();
         vscode.window.showInformationMessage(`Deleted stack "${e.item.matchingStack.name}".`);
         // Re-run the command to refresh the view
-        vscode.commands.executeCommand('copyFileTree.showHistory');
+        vscode.commands.executeCommand('filePrompt.showHistory');
       } else {
         // Save as new stack
         qp.busy = true;
@@ -429,7 +429,7 @@ function activate(context) {
         qp.busy = false;
         if (!name) { return; }
 
-        const cfg = vscode.workspace.getConfiguration('copyFileTree');
+        const cfg = vscode.workspace.getConfiguration('filePrompt');
         const stacks = cfg.get('savedStacks', []);
         stacks.push({ name, paths: entry.paths });
         await cfg.update('savedStacks', stacks, vscode.ConfigurationTarget.Workspace);
@@ -438,7 +438,7 @@ function activate(context) {
         qp.hide();
         vscode.window.showInformationMessage(`Saved as stack "${name}".`);
         // Re-run the command to refresh the view
-        vscode.commands.executeCommand('copyFileTree.showHistory');
+        vscode.commands.executeCommand('filePrompt.showHistory');
       }
     });
 
@@ -446,12 +446,12 @@ function activate(context) {
   });
 
   /* ── ❹ saved stacks command ───────────────────────────── */
-  const stacksCmd = vscode.commands.registerCommand('copyFileTree.copySavedStack', () => {
-    const cfg = vscode.workspace.getConfiguration('copyFileTree');
+  const stacksCmd = vscode.commands.registerCommand('filePrompt.copySavedStack', () => {
+    const cfg = vscode.workspace.getConfiguration('filePrompt');
     const stacks = cfg.get('savedStacks', []);
     
     if (stacks.length === 0) {
-      return vscode.window.showInformationMessage('Copy File Tree: no saved stacks yet.');
+      return vscode.window.showInformationMessage('FilePrompt: no saved stacks yet.');
     }
 
     const deleteButton = {

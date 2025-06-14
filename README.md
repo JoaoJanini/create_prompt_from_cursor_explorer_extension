@@ -1,4 +1,4 @@
-# Copy File Tree Extension
+# FilePrompt Extension
 
 A VS Code/Cursor extension that copies selected files and directories as a structured Markdown tree with complete file contents. Perfect for sharing code context with AI assistants, creating documentation, or reporting issues.
 
@@ -37,26 +37,27 @@ The output is optimized for pasting into:
 
 ## Configuration
 
-Customize the extension behavior in VS Code settings (search for "Copy File Tree"):
+Customize the extension behavior in VS Code settings (search for "FilePrompt"):
 
 ### Default Configuration Values
 
 | Setting | Type | Default Value | Description |
 |---------|------|---------------|-------------|
-| `copyFileTree.respectGitignore` | boolean | `true` | Ignore files and folders that match .gitignore patterns |
-| `copyFileTree.ignoredExtensions` | array | `[".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".ico", ".webp", ".tiff", ".tif", ".mp3", ".mp4", ".avi", ".mov", ".wav", ".flac", ".mkv", ".webm", ".m4a", ".ogg", ".zip", ".rar", ".tar", ".gz", ".7z", ".bz2", ".xz", ".exe", ".dll", ".so", ".dylib", ".bin", ".dat", ".db", ".sqlite", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".ttf", ".otf", ".woff", ".woff2", ".eot", ".lock", ".log", ".tmp", ".temp", ".cache"]` | List of file extensions to ignore (include the dot, e.g., '.jpg') |
-| `copyFileTree.extraIgnoredFiles` | array | `[]` | Additional files and directories to ignore (relative paths from workspace root) |
+| `filePrompt.respectGitignore` | boolean | `true` | Ignore files and folders that match .gitignore patterns |
+| `filePrompt.ignoredExtensions` | array | `[".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".ico", ".webp", ".tiff", ".tif", ".mp3", ".mp4", ".avi", ".mov", ".wav", ".flac", ".mkv", ".webm", ".m4a", ".ogg", ".zip", ".rar", ".tar", ".gz", ".7z", ".bz2", ".xz", ".exe", ".dll", ".so", ".dylib", ".bin", ".dat", ".db", ".sqlite", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".ttf", ".otf", ".woff", ".woff2", ".eot", ".lock", ".log", ".tmp", ".temp", ".cache"]` | List of file extensions to ignore (include the dot, e.g., '.jpg') |
+| `filePrompt.extraIgnoredFiles` | array | `[]` | Additional files and directories to ignore (relative paths from workspace root) |
+| `filePrompt.savedStacks` | array | `[]` | Your saved file selection stacks (managed automatically) |
 
 ### Full Configuration JSON
 
 ```json
 {
-  "copyFileTree.respectGitignore": {
+  "filePrompt.respectGitignore": {
     "type": "boolean",
     "default": true,
     "description": "Ignore files and folders that match .gitignore patterns"
   },
-  "copyFileTree.ignoredExtensions": {
+  "filePrompt.ignoredExtensions": {
     "type": "array",
     "default": [
       ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".ico", 
@@ -70,33 +71,41 @@ Customize the extension behavior in VS Code settings (search for "Copy File Tree
     ],
     "description": "List of file extensions to ignore (include the dot, e.g., '.jpg')"
   },
-  "copyFileTree.extraIgnoredFiles": {
+  "filePrompt.extraIgnoredFiles": {
     "type": "array",
     "default": [],
     "description": "Additional files and directories to ignore (relative paths from workspace root)"
+  },
+  "filePrompt.savedStacks": {
+    "type": "array",
+    "default": [],
+    "description": "Named file‑selection stacks saved from FilePrompt history. Each item has the shape { \"name\": string, \"paths\": string[] }."
   }
 }
 ```
 
 ### Commands
 
-The extension provides two commands:
+The extension provides these commands:
 
 1. **Copy file tree to clipboard** - The main functionality to copy selected files/folders as a structured Markdown tree
-2. **Copy File Tree: Add current file to ignore list** - Quickly add the currently open file to the `extraIgnoredFiles` configuration
+2. **FilePrompt: Add current file to ignore list** - Quickly add the currently open file to the `extraIgnoredFiles` configuration
+3. **FilePrompt: Remove current file from ignore list** - Remove the currently open file from the ignore list
+4. **FilePrompt: Show history** - View your last 20 copy operations and save/manage file selection stacks
+5. **FilePrompt: Copy from saved stack** - Quick access to your saved file selection stacks
 
-To use the "Copy File Tree: Add current file to ignore list" command:
+To use the "FilePrompt: Add current file to ignore list" command:
 - Open any file in VS Code/Cursor
 - Press `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
-- Type "Copy File Tree: Add current file to ignore list" and press Enter
-- The file will be added to your workspace's `copyFileTree.extraIgnoredFiles` setting
+- Type "FilePrompt: Add current file to ignore list" and press Enter
+- The file will be added to your workspace's `filePrompt.extraIgnoredFiles` setting
 
 ## Installation
 
 ### From VS Code Marketplace (Recommended)
 1. Open VS Code/Cursor
 2. Go to Extensions (`Ctrl+Shift+X`)
-3. Search for "Copy File Tree"
+3. Search for "FilePrompt"
 4. Click Install
 
 

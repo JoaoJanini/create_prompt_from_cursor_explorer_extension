@@ -1,10 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM Copy File Tree Extension Installer for Windows
+REM FilePrompt Extension Installer for Windows
 REM This script builds and installs the VS Code/Cursor extension locally
 
-echo [INFO] Starting Copy File Tree Extension installation...
+echo [INFO] Starting FilePrompt Extension installation...
 
 REM Check prerequisites
 echo [INFO] Checking prerequisites...

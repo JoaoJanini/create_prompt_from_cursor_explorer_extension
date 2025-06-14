@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copy File Tree Extension Installer
+# FilePrompt Extension Installer
 # This script builds and installs the VS Code/Cursor extension locally
 
 set -e  # Exit on any error
@@ -75,7 +75,7 @@ install_extension() {
 
 # Main installation function
 main() {
-    print_status "Starting Copy File Tree Extension installation..."
+    print_status "Starting FilePrompt Extension installation..."
     
     # Check prerequisites
     print_status "Checking prerequisites..."
@@ -187,7 +187,7 @@ main() {
 
 # Show help
 show_help() {
-    echo "Copy File Tree Extension Installer"
+    echo "FilePrompt Extension Installer"
     echo
     echo "Usage: $0 [options]"
     echo

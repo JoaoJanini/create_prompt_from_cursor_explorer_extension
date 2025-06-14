@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "Copy File Tree" extension will be documented in this file.
+All notable changes to the "FilePrompt" extension will be documented in this file.
 
 ## [0.0.1] - 2025-01-XX
 

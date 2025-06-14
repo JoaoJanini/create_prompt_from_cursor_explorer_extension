@@ -1,6 +1,6 @@
 {
-    "name": "copy-file-tree",
-    "displayName": "Copy File Tree",
+    "name": "fileprompt",
+    "displayName": "FilePrompt",
     "description": "Copy selected files/directories as a Markdown tree (with contents) to the clipboard.",
     "version": "0.0.7",
     "publisher": "joaojanini",
@@ -32,43 +32,43 @@
     ],
     "main": "./extension.js",
     "activationEvents": [
-        "onCommand:copyFileTree.copy"
+        "onCommand:filePrompt.copy"
     ],
     "contributes": {
         "commands": [
             {
-                "command": "copyFileTree.copy",
+                "command": "filePrompt.copy",
                 "title": "Copy file tree to clipboard"
             },
             {
-                "command": "copyFileTree.addToIgnoreList",
-                "title": "Copy File Tree: Add current file to ignore list"
+                "command": "filePrompt.addToIgnoreList",
+                "title": "FilePrompt: Add current file to ignore list"
             },
             {
-                "command": "copyFileTree.removeFromIgnoreList",
-                "title": "Copy File Tree: Remove current file from ignore list"
+                "command": "filePrompt.removeFromIgnoreList",
+                "title": "FilePrompt: Remove current file from ignore list"
             },
             {
-                "command": "copyFileTree.showHistory",
-                "title": "Copy File Tree: Show history"
+                "command": "filePrompt.showHistory",
+                "title": "FilePrompt: Show history"
             },
             {
-                "command": "copyFileTree.copySavedStack",
-                "title": "Copy File Tree: Copy from saved stack"
+                "command": "filePrompt.copySavedStack",
+                "title": "FilePrompt: Copy from saved stack"
             }
         ],
         "menus": {
             "explorer/context": [
                 {
-                    "command": "copyFileTree.copy",
+                    "command": "filePrompt.copy",
                     "group": "navigation"
                 }
             ]
         },
         "configuration": {
-            "title": "Copy File Tree",
+            "title": "FilePrompt",
             "properties": {
-                "copyFileTree.ignoredExtensions": {
+                "filePrompt.ignoredExtensions": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -129,12 +129,12 @@
                     ],
                     "description": "List of file extensions to ignore (include the dot, e.g., '.jpg')"
                 },
-                "copyFileTree.respectGitignore": {
+                "filePrompt.respectGitignore": {
                     "type": "boolean",
                     "default": true,
                     "description": "Ignore files and folders that match .gitignore patterns"
                 },
-                "copyFileTree.extraIgnoredFiles": {
+                "filePrompt.extraIgnoredFiles": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -142,10 +142,10 @@
                     "default": [],
                     "description": "Additional files and directories to ignore (relative paths from workspace root)"
                 },
-                "copyFileTree.savedStacks": {
+                "filePrompt.savedStacks": {
                     "type": "array",
                     "default": [],
-                    "description": "Named file‑selection stacks saved from Copy File Tree history. Each item has the shape { \"name\": string, \"paths\": string[] }."
+                    "description": "Named file‑selection stacks saved from FilePrompt history. Each item has the shape { \"name\": string, \"paths\": string[] }."
                 }
             }
         }
@@ -153,7 +153,7 @@
     "scripts": {
         "package": "vsce package",
         "publish": "vsce publish",
-        "install-local": " cursor --install-extension copy-file-tree-*.vsix && code --install-extension copy-file-tree-*.vsix",
+        "install-local": " cursor --install-extension fileprompt-*.vsix && code --install-extension fileprompt-*.vsix",
         "full-install": "npm install && npm run package && npm run install-local"
     },
     "dependencies": {
