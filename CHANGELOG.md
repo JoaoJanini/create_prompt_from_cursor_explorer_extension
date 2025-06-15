@@ -2,7 +2,7 @@
 
 All notable changes to the "FilePrompt" extension will be documented in this file.
 
-## [0.0.1] - 2025-01-XX
+## [0.0.1] - 2025-01-13
 
 ### Added
 - Initial release

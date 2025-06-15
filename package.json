@@ -6,6 +6,7 @@
     "publisher": "joaojanini",
     "author": "João Janini",
     "license": "MIT",
+    "icon": "finalicon.png",
     "homepage": "https://github.com/JoaoJanini/create_prompt_from_cursor_explorer_extension#readme",
     "bugs": {
         "url": "https://github.com/JoaoJanini/create_prompt_from_cursor_explorer_extension/issues"
@@ -28,7 +29,7 @@
         "vscode": "^1.90.0"
     },
     "categories": [
-        "Other"
+        "Utilities"
     ],
     "main": "./extension.js",
     "activationEvents": [
@@ -38,23 +39,23 @@
         "commands": [
             {
                 "command": "filePrompt.copy",
-                "title": "Copy file tree to clipboard"
+                "title": "FilePrompt: Copy Contents and File Tree (.md)"
             },
             {
                 "command": "filePrompt.addToIgnoreList",
-                "title": "FilePrompt: Add current file to ignore list"
+                "title": "FilePrompt: Ignore Current File"
             },
             {
                 "command": "filePrompt.removeFromIgnoreList",
-                "title": "FilePrompt: Remove current file from ignore list"
+                "title": "FilePrompt: Unignore Current File"
             },
             {
                 "command": "filePrompt.showHistory",
-                "title": "FilePrompt: Show history"
+                "title": "FilePrompt: History"
             },
             {
                 "command": "filePrompt.copySavedStack",
-                "title": "FilePrompt: Copy from saved stack"
+                "title": "FilePrompt: Saved Stacks"
             }
         ],
         "menus": {
