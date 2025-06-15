@@ -29,7 +29,7 @@
         "vscode": "^1.90.0"
     },
     "categories": [
-        "Utilities"
+        "Snippets"
     ],
     "main": "./extension.js",
     "activationEvents": [
@@ -154,6 +154,7 @@
     "scripts": {
         "package": "vsce package",
         "publish": "vsce publish",
+        "release": "node release.js",
         "install-local": " cursor --install-extension fileprompt-*.vsix && code --install-extension fileprompt-*.vsix",
         "full-install": "npm install && npm run package && npm run install-local"
     },
@@ -162,6 +163,7 @@
         "ignore": "^5.3.0"
     },
     "devDependencies": {
-        "@vscode/vsce": "^2.24.0"
+        "@vscode/vsce": "^2.24.0",
+        "dotenv": "^16.0.0"
     }
 }

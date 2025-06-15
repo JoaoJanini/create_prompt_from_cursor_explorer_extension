@@ -214,7 +214,7 @@ async function dumpFilesMarkdown(paths) {
 
       const rel     = vscode.workspace.asRelativePath(p, false);
       const code    = await fs.readFile(p, 'utf8');
-      const segment = `## File: \`${rel}\`\n\`\`\`${detectLang(rel)}\n${code}\n\`\`\`\n`;
+      const segment = `## File: \`${rel}\`\n\`\`\`${detectLang(p)}\n${code}\n\`\`\`\n`;
 
       contentCache.set(p, { size, mtimeMs, segment });   // update cache
       return segment;
