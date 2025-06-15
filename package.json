@@ -2,7 +2,7 @@
     "name": "fileprompt",
     "displayName": "FilePrompt",
     "description": "Copy selected files/directories as a Markdown tree (with contents) to the clipboard.",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "publisher": "joaojanini",
     "author": "João Janini",
     "license": "MIT",
