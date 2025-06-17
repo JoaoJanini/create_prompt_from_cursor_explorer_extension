@@ -344,7 +344,36 @@ function activate(context) {
     }
   });
 
-  context.subscriptions.push(copyCommand, addIgnoreCmd, removeIgnoreCmd);
+  const addToStackCmd = vscode.commands.registerCommand('filePrompt.addToStack', async (clicked, multi) => {
+    const sel = multi?.length ? multi : [clicked];
+    const cfg = vscode.workspace.getConfiguration('filePrompt');
+    const stacks = cfg.get('savedStacks', []);
+
+    const pickItems = stacks.map(s => ({ label: `$(file-directory) ${s.name}`, stack: s }));
+    pickItems.push({ label: '$(add) Create new stack', create: true });
+
+    const choice = await vscode.window.showQuickPick(pickItems, { placeHolder: 'Add selection to stack…' });
+    if (!choice) { return; }
+
+    if (choice.create) {
+      const name = await vscode.window.showInputBox({ prompt: 'Stack name' });
+      if (!name) { return; }
+      stacks.push({ name, paths: sel.map(u => u.fsPath) });
+      await cfg.update('savedStacks', stacks, vscode.ConfigurationTarget.Workspace);
+      vscode.window.showInformationMessage(`Created stack "${name}" with ${sel.length} item${sel.length === 1 ? '' : 's'}.`);
+    } else {
+      const base = choice.stack;
+      const toAdd = sel.map(u => u.fsPath).filter(p => !base.paths.includes(p));
+      if (toAdd.length === 0) {
+        return vscode.window.showInformationMessage('Selected items already in stack.');
+      }
+      base.paths.push(...toAdd);
+      await cfg.update('savedStacks', stacks, vscode.ConfigurationTarget.Workspace);
+      vscode.window.showInformationMessage(`Added ${toAdd.length} item${toAdd.length === 1 ? '' : 's'} to stack "${base.name}".`);
+    }
+  });
+
+  context.subscriptions.push(copyCommand, addIgnoreCmd, removeIgnoreCmd, addToStackCmd);
 
   /* ── ❸ history command ───────────────────────────── */
   const histCmd = vscode.commands.registerCommand('filePrompt.showHistory', () => {

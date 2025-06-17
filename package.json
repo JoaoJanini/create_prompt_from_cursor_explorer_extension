@@ -33,7 +33,8 @@
     ],
     "main": "./extension.js",
     "activationEvents": [
-        "onCommand:filePrompt.copy"
+        "onCommand:filePrompt.copy",
+        "onCommand:filePrompt.addToStack"
     ],
     "contributes": {
         "commands": [
@@ -56,12 +57,20 @@
             {
                 "command": "filePrompt.copySavedStack",
                 "title": "FilePrompt: Saved Stacks"
+            },
+            {
+                "command": "filePrompt.addToStack",
+                "title": "FilePrompt: Add to Stack"
             }
         ],
         "menus": {
             "explorer/context": [
                 {
                     "command": "filePrompt.copy",
+                    "group": "navigation"
+                },
+                {
+                    "command": "filePrompt.addToStack",
                     "group": "navigation"
                 }
             ]

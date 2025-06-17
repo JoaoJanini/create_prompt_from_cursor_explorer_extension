@@ -93,6 +93,7 @@ The extension provides these commands:
 3. **FilePrompt: Remove current file from ignore list** - Remove the currently open file from the ignore list
 4. **FilePrompt: Show history** - View your last 20 copy operations and save/manage file selection stacks
 5. **FilePrompt: Copy from saved stack** - Quick access to your saved file selection stacks
+6. **FilePrompt: Add selection to stack** - Add the currently selected explorer items to a named stack
 
 To use the "FilePrompt: Add current file to ignore list" command:
 - Open any file in VS Code/Cursor
