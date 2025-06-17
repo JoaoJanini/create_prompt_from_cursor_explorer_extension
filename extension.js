@@ -525,4 +525,20 @@ function activate(context) {
 }
 
 function deactivate() {}
-module.exports = { activate, deactivate };
+
+// Export internal helpers for unit testing when NODE_ENV is 'test'
+if (process.env.NODE_ENV === 'test') {
+  module.exports = {
+    activate,
+    deactivate,
+    formatSize,
+    detectLang,
+    isExtraIgnored,
+    gatherFiles,
+    prepare,
+    dumpFilesMarkdown,
+    buildIgnoreFilter
+  };
+} else {
+  module.exports = { activate, deactivate };
+}
