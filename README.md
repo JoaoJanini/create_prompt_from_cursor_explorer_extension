@@ -5,7 +5,7 @@ A VS Code/Cursor extension that copies selected files and directories as a struc
 ## How to Use
 
 - **Select multiple files and folders** in the VS Code/Cursor explorer
-- **Right-click** and choose "Copy file tree to clipboard" 
+- **Right-click** and choose "Copy file tree to clipboard" or "Add to Stack…"
 - **Get a formatted output** that includes:
   - A visual directory tree structure in Markdown
   - Complete source code of each file in fenced code blocks
@@ -89,10 +89,11 @@ Customize the extension behavior in VS Code settings (search for "FilePrompt"):
 The extension provides these commands:
 
 1. **Copy file tree to clipboard** - The main functionality to copy selected files/folders as a structured Markdown tree
-2. **FilePrompt: Add current file to ignore list** - Quickly add the currently open file to the `extraIgnoredFiles` configuration
-3. **FilePrompt: Remove current file from ignore list** - Remove the currently open file from the ignore list
-4. **FilePrompt: Show history** - View your last 20 copy operations and save/manage file selection stacks
-5. **FilePrompt: Copy from saved stack** - Quick access to your saved file selection stacks
+2. **FilePrompt: Add selection to stack** - Add selected items to an existing or new stack
+3. **FilePrompt: Add current file to ignore list** - Quickly add the currently open file to the `extraIgnoredFiles` configuration
+4. **FilePrompt: Remove current file from ignore list** - Remove the currently open file from the ignore list
+5. **FilePrompt: Show history** - View your last 20 copy operations and save/manage file selection stacks
+6. **FilePrompt: Copy from saved stack** - Quick access to your saved file selection stacks
 
 To use the "FilePrompt: Add current file to ignore list" command:
 - Open any file in VS Code/Cursor

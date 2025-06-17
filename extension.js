@@ -344,7 +344,66 @@ function activate(context) {
     }
   });
 
-  context.subscriptions.push(copyCommand, addIgnoreCmd, removeIgnoreCmd);
+  const addToStackCmd = vscode.commands.registerCommand('filePrompt.addToStack', async (clicked, multi) => {
+    const selection = multi?.length ? multi : [clicked];
+    if (!selection?.length) {
+      return vscode.window.showInformationMessage('No files or folders selected.');
+    }
+
+    const cfg    = vscode.workspace.getConfiguration('filePrompt');
+    const stacks = cfg.get('savedStacks', []);
+
+    const qp = vscode.window.createQuickPick();
+    qp.title = 'Add to Stack…';
+    qp.items = [
+      { label: '$(new-folder) Create new stack', isNew: true },
+      ...stacks.map((s, i) => ({
+        label: `📚 ${s.name}`,
+        description: `${s.paths.length} path${s.paths.length !== 1 ? 's' : ''}`,
+        idx: i
+      }))
+    ];
+
+    qp.onDidAccept(async () => {
+      const sel = qp.selectedItems[0];
+      qp.hide();
+      if (!sel) { return; }
+
+      const newPaths = selection.map(u => u.fsPath);
+      if (sel.isNew) {
+        const name = await vscode.window.showInputBox({ prompt: 'Stack name', value: '' });
+        if (!name) { return; }
+        const stack = { name, paths: [] };
+        const set = new Set();
+        newPaths.forEach(p => { if (!set.has(p)) { set.add(p); stack.paths.push(p); } });
+        stacks.push(stack);
+        await cfg.update('savedStacks', stacks, vscode.ConfigurationTarget.Workspace);
+        vscode.window.showInformationMessage(`Created stack "${name}".`);
+      } else {
+        const stack = stacks[sel.idx];
+        const existing = new Set(stack.paths);
+        let added = 0;
+        newPaths.forEach(p => {
+          if (!existing.has(p)) {
+            existing.add(p);
+            stack.paths.push(p);
+            added += 1;
+          }
+        });
+        if (added > 0) {
+          await cfg.update('savedStacks', stacks, vscode.ConfigurationTarget.Workspace);
+          vscode.window.showInformationMessage(`Added ${added} entr${added !== 1 ? 'ies' : 'y'} to stack "${stack.name}".`);
+        } else {
+          vscode.window.showInformationMessage(`All selected entries already in stack "${stack.name}".`);
+        }
+      }
+    });
+
+    qp.onDidHide(() => qp.dispose());
+    qp.show();
+  });
+
+  context.subscriptions.push(copyCommand, addIgnoreCmd, removeIgnoreCmd, addToStackCmd);
 
   /* ── ❸ history command ───────────────────────────── */
   const histCmd = vscode.commands.registerCommand('filePrompt.showHistory', () => {
