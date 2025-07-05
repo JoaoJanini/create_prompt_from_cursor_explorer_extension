@@ -57,8 +57,13 @@ async function buildIgnoreFilter(workspaceRoot) {
 
   await Promise.all(
     gitignoreFiles.map(async (uri) => {
-      const content = await fs.readFile(uri.fsPath, 'utf8');
-      ig.add(content);
+      try {
+        const content = await fs.readFile(uri.fsPath, 'utf8');
+        ig.add(content);
+      } catch (err) {
+        // Silently ignore gitignore files that can't be read
+        console.warn(`FilePrompt: Could not read .gitignore file: ${uri.fsPath}`, err);
+      }
     })
   );
 
@@ -66,9 +71,11 @@ async function buildIgnoreFilter(workspaceRoot) {
 }
 async function getIgnoreFilter(workspaceRoot) {
   if (!ignoreCache.has(workspaceRoot)) {
-    ignoreCache.set(workspaceRoot, buildIgnoreFilter(workspaceRoot));
+    const filterPromise = buildIgnoreFilter(workspaceRoot);
+    ignoreCache.set(workspaceRoot, filterPromise);
+    return await filterPromise;
   }
-  return ignoreCache.get(workspaceRoot);
+  return await ignoreCache.get(workspaceRoot);
 }
 async function isIgnored(fsPath, workspaceRoot, ig) {
   const rel = path.relative(workspaceRoot, fsPath).replace(/\\/g, '/');
@@ -83,25 +90,30 @@ const isExtraIgnored = (fsPath, workspaceRoot) => {
 };
 
 /* ─────────── file system traversal (fully async) ─────────── */
-async function gatherFiles(startUri, ig, out /* Set */) {
-  const entries = await fs.readdir(startUri.fsPath, { withFileTypes: true });
+async function gatherFiles(startUri, workspaceRoot, ig, out /* Set */) {
+  try {
+    const entries = await fs.readdir(startUri.fsPath, { withFileTypes: true });
 
-  await Promise.all(entries.map(async (dirent) => {
+    await Promise.all(entries.map(async (dirent) => {
     if (dirent.name === '.git') { return; }                        // always skip
     const child = vscode.Uri.file(path.join(startUri.fsPath, dirent.name));
 
     if (
-      (await isIgnored(child.fsPath, ig._base, ig)) ||
+      (await isIgnored(child.fsPath, workspaceRoot, ig)) ||
       isUnwantedExtension(child.fsPath) ||
-      isExtraIgnored(child.fsPath, ig._base)
+      isExtraIgnored(child.fsPath, workspaceRoot)
     ) { return; }
 
     if (dirent.isDirectory()) {
-      await gatherFiles(child, ig, out);
+      await gatherFiles(child, workspaceRoot, ig, out);
     } else {
       out.add(child.fsPath);
     }
   }));
+  } catch (err) {
+    // Silently ignore directories that can't be read
+    console.warn(`FilePrompt: Could not read directory: ${startUri.fsPath}`, err);
+  }
 }
 
 /* ───── prepare markdown & tree ───── */
@@ -110,7 +122,6 @@ async function prepare(selectedUris) {
   if (!workspaceRoot) { throw new Error('No workspace folder is open.'); }
 
   const ig                = await getIgnoreFilter(workspaceRoot);
-  ig._base                = workspaceRoot;     // helper for isIgnored()
   const filePaths         = new Set();
   const foldersExplicitly = new Set();
 
@@ -124,7 +135,7 @@ async function prepare(selectedUris) {
     const stat = await fs.stat(u.fsPath);
     if (stat.isDirectory()) {
       foldersExplicitly.add(u.fsPath);
-      await gatherFiles(u, ig, filePaths);
+      await gatherFiles(u, workspaceRoot, ig, filePaths);
     } else {
       filePaths.add(u.fsPath);
     }
@@ -213,11 +224,18 @@ async function dumpFilesMarkdown(paths) {
       }
 
       const rel     = vscode.workspace.asRelativePath(p, false);
-      const code    = await fs.readFile(p, 'utf8');
-      const segment = `## File: \`${rel}\`\n\`\`\`${detectLang(p)}\n${code}\n\`\`\`\n`;
+      try {
+        const code    = await fs.readFile(p, 'utf8');
+        const segment = `## File: \`${rel}\`\n\`\`\`${detectLang(p)}\n${code}\n\`\`\`\n`;
 
-      contentCache.set(p, { size, mtimeMs, segment });   // update cache
-      return segment;
+        contentCache.set(p, { size, mtimeMs, segment });   // update cache
+        return segment;
+      } catch (err) {
+        // Handle files that can't be read (permissions, binary files, etc.)
+        const errorSegment = `## File: \`${rel}\`\n\`\`\`\n[ERROR: Could not read file - ${err.message}]\n\`\`\`\n`;
+        contentCache.set(p, { size, mtimeMs, segment: errorSegment });
+        return errorSegment;
+      }
     })
   );
   return segments.join('\n');
@@ -292,6 +310,11 @@ function activate(context) {
   const copyCommand = vscode.commands.registerCommand(
     'filePrompt.copy',
     (clicked, multi) => {
+      // Handle case where clicked might be undefined/null
+      if (!clicked && (!multi || multi.length === 0)) {
+        vscode.window.showErrorMessage('FilePrompt: No files selected');
+        return;
+      }
       const sel = multi?.length ? multi : [clicked];
       runCopy(sel);
     }
