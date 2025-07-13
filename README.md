@@ -124,3 +124,15 @@ cd create_prompt_from_cursor_explorer_extension
 # Install dependencies
 npm run full-install
 ```
+
+
+## Testing
+
+This project includes a Mocha test suite located in `test/extension.test.js`.
+Run all tests with:
+
+```bash
+npm test --silent
+```
+
+See [TESTS.md](TESTS.md) for a detailed description of each test.
