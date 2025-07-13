@@ -57,8 +57,26 @@ async function buildIgnoreFilter(workspaceRoot) {
 
   await Promise.all(
     gitignoreFiles.map(async (uri) => {
+      const dirRel = path
+        .relative(workspaceRoot, path.dirname(uri.fsPath))
+        .replace(/\\/g, '/');                    // directory of this .gitignore
+
       const content = await fs.readFile(uri.fsPath, 'utf8');
-      ig.add(content);
+      content.split(/\r?\n/).forEach((line) => {
+        const raw = line.trim();
+        if (!raw || raw.startsWith('#')) return; // skip blanks / comments
+
+        // retain possible negation prefix
+        const neg   = raw.startsWith('!');
+        const body  = neg ? raw.slice(1) : raw;
+
+        // strip leading "/" (root‑relative inside its own dir)
+        const core  = body.startsWith('/') ? body.slice(1) : body;
+
+        // re‑scope pattern to its directory
+        const scoped = dirRel ? `${dirRel}/${core}` : core;
+        ig.add((neg ? '!' : '') + scoped);
+      });
     })
   );
 
@@ -71,6 +89,9 @@ async function getIgnoreFilter(workspaceRoot) {
   return ignoreCache.get(workspaceRoot);
 }
 async function isIgnored(fsPath, workspaceRoot, ig) {
+  // allow user to disable .gitignore filtering altogether
+  if (!getConfig().get('respectGitignore', true)) return false;
+
   const rel = path.relative(workspaceRoot, fsPath).replace(/\\/g, '/');
   return ig.ignores(rel);
 }
