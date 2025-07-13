@@ -473,17 +473,21 @@ function activate(context) {
       iconPath: new vscode.ThemeIcon('trash'),
       tooltip: 'Delete stack'
     };
+    const editButton = {
+      iconPath: new vscode.ThemeIcon('pencil'),
+      tooltip: 'Edit stack'
+    };
 
     const qp = vscode.window.createQuickPick();
     qp.matchOnDetail = true;
-    qp.placeholder = 'Select to copy · click 🗑️ to delete stack';
+    qp.placeholder = 'Select to copy · click 🗑️ to delete · click ✏️ to edit';
     qp.items = stacks.map((stack, i) => ({
       label: `📚 ${stack.name}`,
       description: `${stack.paths.length} file${stack.paths.length !== 1 ? 's' : ''}`,
       detail: stack.paths.slice(0, 3).map(p => vscode.workspace.asRelativePath(p, false)).join(', ') + 
               (stack.paths.length > 3 ? `, +${stack.paths.length - 3} more...` : ''),
       idx: i,
-      buttons: [deleteButton]
+      buttons: [deleteButton, editButton]
     }));
 
     /* copy on selection */
@@ -514,28 +518,79 @@ function activate(context) {
       runCopy(existingPaths.map(p => vscode.Uri.file(p)));
     });
 
-    /* delete button */
+    /* delete/edit buttons */
     qp.onDidTriggerItemButton(async (e) => {
-      const stackToDelete = stacks[e.item.idx];
+      if (e.button === deleteButton) {
+        const stackToDelete = stacks[e.item.idx];
 
-      const updatedStacks = stacks.filter((_, i) => i !== e.item.idx);
-      await cfg.update('savedStacks', updatedStacks, vscode.ConfigurationTarget.Workspace);
-      
-      // Refresh the quick pick
-      qp.items = updatedStacks.map((stack, i) => ({
-        label: `📚 ${stack.name}`,
-        description: `${stack.paths.length} file${stack.paths.length !== 1 ? 's' : ''}`,
-        detail: stack.paths.slice(0, 3).map(p => vscode.workspace.asRelativePath(p, false)).join(', ') + 
-                (stack.paths.length > 3 ? `, +${stack.paths.length - 3} more...` : ''),
-        idx: i,
-        buttons: [deleteButton]
-      }));
+        const updatedStacks = stacks.filter((_, i) => i !== e.item.idx);
+        await cfg.update('savedStacks', updatedStacks, vscode.ConfigurationTarget.Workspace);
 
-      if (updatedStacks.length === 0) {
-        qp.hide();
-        vscode.window.showInformationMessage('All stacks deleted.');
-      } else {
-        vscode.window.showInformationMessage(`Deleted stack "${stackToDelete.name}".`);
+        // Refresh the quick pick
+        qp.items = updatedStacks.map((stack, i) => ({
+          label: `📚 ${stack.name}`,
+          description: `${stack.paths.length} file${stack.paths.length !== 1 ? 's' : ''}`,
+          detail: stack.paths.slice(0, 3).map(p => vscode.workspace.asRelativePath(p, false)).join(', ') +
+                  (stack.paths.length > 3 ? `, +${stack.paths.length - 3} more...` : ''),
+          idx: i,
+          buttons: [deleteButton, editButton]
+        }));
+
+        if (updatedStacks.length === 0) {
+          qp.hide();
+          vscode.window.showInformationMessage('All stacks deleted.');
+        } else {
+          vscode.window.showInformationMessage(`Deleted stack "${stackToDelete.name}".`);
+        }
+        return;
+      }
+
+      if (e.button === editButton) {
+        const stack = stacks[e.item.idx];
+
+        const filePick = vscode.window.createQuickPick();
+        filePick.canSelectMany = true;
+        filePick.title = `Edit stack "${stack.name}"`;
+        filePick.matchOnDetail = true;
+        filePick.placeholder = 'Uncheck files/directories to remove';
+        filePick.items = stack.paths.map(p => ({
+          label: vscode.workspace.asRelativePath(p, false),
+          path: p,
+          picked: true
+        }));
+
+        filePick.onDidAccept(async () => {
+          const selected = new Set(filePick.selectedItems.map(item => item.path));
+          const newPaths = stack.paths.filter(p => selected.has(p));
+          filePick.hide();
+
+          if (newPaths.length === 0) {
+            // delete stack if empty
+            stacks.splice(e.item.idx, 1);
+            vscode.window.showInformationMessage(`Deleted empty stack "${stack.name}".`);
+          } else {
+            stacks[e.item.idx] = { name: stack.name, paths: newPaths };
+            vscode.window.showInformationMessage(`Updated stack "${stack.name}".`);
+          }
+
+          await cfg.update('savedStacks', stacks, vscode.ConfigurationTarget.Workspace);
+
+          // Refresh main quick pick
+          qp.items = stacks.map((stack, i) => ({
+            label: `📚 ${stack.name}`,
+            description: `${stack.paths.length} file${stack.paths.length !== 1 ? 's' : ''}`,
+            detail: stack.paths.slice(0, 3).map(p => vscode.workspace.asRelativePath(p, false)).join(', ') +
+                    (stack.paths.length > 3 ? `, +${stack.paths.length - 3} more...` : ''),
+            idx: i,
+            buttons: [deleteButton, editButton]
+          }));
+
+          if (stacks.length === 0) {
+            qp.hide();
+          }
+        });
+
+        filePick.show();
       }
     });
 

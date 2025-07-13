@@ -16,4 +16,8 @@ All notable changes to the "FilePrompt" extension will be documented in this fil
 - Right-click context menu in file explorer
 - Copies complete file contents in fenced code blocks
 - Visual directory tree structure
-- Optimized for AI chat interfaces and documentation 
+- Optimized for AI chat interfaces and documentation
+
+## [0.0.2] - 2025-06-17
+### Added
+- Edit saved stacks via the `FilePrompt: Saved Stacks` command
