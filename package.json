@@ -26,7 +26,7 @@
         "url": "https://github.com/JoaoJanini/create_prompt_from_cursor_explorer_extension.git"
     },
     "engines": {
-        "vscode": "^1.90.0"
+        "vscode": ">=1.80.0"
     },
     "categories": [
         "Snippets"

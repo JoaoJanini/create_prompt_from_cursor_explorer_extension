@@ -1,0 +1,80 @@
+name: FilePrompt CI & CD
+
+on:
+  # ---------- Validation -------------------------------------------------
+  pull_request:
+    branches: [ main ]
+
+  # ---------- Release ----------------------------------------------------
+  push:
+    tags:
+      - 'v*.*.*'          # e.g. v0.1.0 – tag pushed from merge step above
+
+jobs:
+# ------------------------------------------------------------------------
+#  CI job: runs for every PR and every push to main
+# ------------------------------------------------------------------------
+  build-test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install deps & build VSIX
+        run: |
+          npm ci
+          npm run package                       # --> *.vsix
+
+      # Expose the artefact so reviewers can try the candidate build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fileprompt-pr-build
+          path: '*.vsix'
+
+# ------------------------------------------------------------------------
+#  CD job: fires only when a version tag is pushed (vX.Y.Z)
+# ------------------------------------------------------------------------
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # create GitHub Release
+      id-token: write       # required by vsce when using OIDC
+
+    steps:
+      - uses: actions/checkout@v4
+        # fetch-depth: 0 is default in v4 → tags are already present
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install VSCE CLI
+        run: npm install -g @vscode/vsce
+
+      - name: Build VSIX
+        run: vsce package --out fileprompt.vsix
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}   # add this secret in repo / org
+        run: |
+          vsce publish --packagePath fileprompt.vsix
+
+      - name: Create GitHub Release with asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            fileprompt.vsix
